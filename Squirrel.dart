@@ -189,6 +189,67 @@ class CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   }
 }
 
+class CommentPage extends StatefulWidget {
+  final String imagePath;
+
+  const CommentPage({Key? key, required this.imagePath}) : super(key: key);
+
+  @override
+  _CommentPageState createState() => _CommentPageState();
+}
+
+class _CommentPageState extends State<CommentPage> {
+  final TextEditingController _commentController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Add Comment'),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Image.file(
+              File(widget.imagePath),
+              height: 200, // Smaller preview of the photo
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _commentController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Write a comment...',
+              ),
+              maxLines: null,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  icon: Icon(Icons.upload),
+                  label: Text('Upload'),
+                  onPressed: () {
+                    // Placeholder for upload functionality
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class PreviewPage extends StatefulWidget {
   final String imagePath;
 
@@ -231,8 +292,9 @@ class _PreviewPageState extends State<PreviewPage> {
                   icon: Icon(Icons.check_circle),
                   label: Text('Use Photo'),
                   onPressed: () {
-                    // For now, do nothing or navigate to a new page where you use the photo
-                    // Navigator.of(context).push(MaterialPageRoute(builder: (_) => UsePhotoPage()));
+                   Navigator.of(context).push(MaterialPageRoute(
+                   builder: (context) => CommentPage(imagePath: widget.imagePath),
+                   ));
                   },
                 ),
               ],

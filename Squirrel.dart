@@ -2,9 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:video_player/video_player.dart';
-import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
 
 void main() => runApp(const MyApp());
 
@@ -34,7 +31,6 @@ class CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   late CameraController _controller;
   bool _isCameraInitialized = false;
   late List<CameraDescription> _cameras;
-  bool _isRecording = false;
 
   @override
   void initState() {
@@ -43,70 +39,64 @@ class CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     initCamera();
   }
 
-Future<void> initCamera() async {
-  try {
-    _cameras = await availableCameras();
-  } on Exception catch (e) {
-    debugPrint('Error retrieving available cameras: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('No cameras found')),
-    );
-    return;
+  Future<void> initCamera() async {
+    try {
+      _cameras = await availableCameras();
+    } on Exception catch (e) {
+      debugPrint('Error retrieving available cameras: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No cameras found')),
+      );
+      return;
+    }
+
+    if (_cameras.isEmpty) {
+      debugPrint('No cameras found');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No cameras found')),
+      );
+      return;
+    }
+
+    _controller = CameraController(_cameras.first, ResolutionPreset.high, imageFormatGroup: ImageFormatGroup.jpeg);
+
+    try {
+      await _controller.initialize();
+    } on Exception catch (e) {
+      debugPrint('Error initializing camera: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error initializing camera: $e')),
+      );
+      return;
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isCameraInitialized = _controller.value.isInitialized;
+    });
+
+    onNewCameraSelected(_cameras.first);
   }
-
-  if (_cameras.isEmpty) {
-    debugPrint('No cameras found');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('No cameras found')),
-    );
-    return;
-  }
-
-  _controller = CameraController(_cameras.first, ResolutionPreset.high, imageFormatGroup: ImageFormatGroup.jpeg);
-
-  try {
-    await _controller.initialize();
-  } on Exception catch (e) {
-    debugPrint('Error initializing camera: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error initializing camera: $e')),
-    );
-    return;
-  }
-
-  if (!mounted) {
-    return;
-  }
-
-  setState(() {
-    _isCameraInitialized = _controller.value.isInitialized;
-  });
-
-  onNewCameraSelected(_cameras.first);
-}
 
   Future<void> onNewCameraSelected(CameraDescription description) async {
     final previousCameraController = _controller;
 
-    final CameraController cameraController = CameraController(
+    _controller = CameraController(
       description,
       ResolutionPreset.high,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
 
     try {
-      await cameraController.initialize();
+      await _controller.initialize();
     } on Exception catch (e) {
       debugPrint('Error initializing camera: $e');
     }
 
     await previousCameraController?.dispose();
-
-    if (mounted) {
-      setState(() {
-        _controller = cameraController;
-      });
-    }
 
     if (mounted) {
       setState(() {
@@ -124,16 +114,14 @@ Future<void> initCamera() async {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final CameraController? cameraController = _controller;
-
-    if (cameraController == null || !cameraController.value.isInitialized) {
+    if (_controller == null || !_controller.value.isInitialized) {
       return;
     }
 
     if (state == AppLifecycleState.inactive) {
-      cameraController.dispose();
+      _controller.dispose();
     } else if (state == AppLifecycleState.resumed) {
-      onNewCameraSelected(cameraController.description);
+      onNewCameraSelected(_controller.description);
     }
   }
 
@@ -153,25 +141,12 @@ Future<void> initCamera() async {
                     style: ElevatedButton.styleFrom(
                       fixedSize: const Size(70, 70),
                       shape: const CircleBorder(),
-                      backgroundColor: Colors.white,
+                      backgroundColor: Colors.purple,
                     ),
                     child: const Icon(
                       Icons.camera_alt,
-                      color: Colors.black,
+                      color:  Colors.white,
                       size: 30,
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                    onPressed: _onRecordVideoPressed,
-                    style: ElevatedButton.styleFrom(
-                      fixedSize: const Size(70, 70),
-                      shape: const CircleBorder(),
-                      backgroundColor: Colors.white,
-                    ),
-                    child: Icon(
-                      _isRecording ? Icons.stop : Icons.videocam,
-                      color: Colors.red,
                     ),
                   ),
                 ],
@@ -212,94 +187,59 @@ Future<void> initCamera() async {
       );
     }
   }
-
-  Future<XFile?> captureVideo() async {
-    if (_controller.value.isRecordingVideo) {
-      return null;
-    }
-    try {
-      setState(() {
-        _isRecording = true;
-      });
-      await _controller.startVideoRecording();
-      await Future.delayed(const Duration(seconds: 5));
-      final video = await _controller.stopVideoRecording();
-      setState(() {
-        _isRecording = false;
-      });
-      return video;
-    } on CameraException catch (e) {
-      debugPrint('Error occurred while capturing video: $e');
-      return null;
-    }
-  }
-
-  void _onRecordVideoPressed() async {
-    final xFile = await captureVideo();
-    if (xFile != null) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => PreviewPage(
-            videoPath: xFile.path,
-          ),
-        ),
-      );
-    }
-  }
 }
 
 class PreviewPage extends StatefulWidget {
-  final String? imagePath;
-  final String? videoPath;
+  final String imagePath;
 
-  const PreviewPage({Key? key, this.imagePath, this.videoPath}) : super(key: key);
+  const PreviewPage({Key? key, required this.imagePath}) : super(key: key);
 
   @override
   State<PreviewPage> createState() => _PreviewPageState();
 }
 
 class _PreviewPageState extends State<PreviewPage> {
-  VideoPlayerController? controller;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.videoPath != null) {
-      _startVideoPlayer();
-    }
-  }
-
-  Future<void> _startVideoPlayer() async {
-    if (widget.videoPath != null) {
-      controller = VideoPlayerController.file(File(widget.videoPath!));
-      await controller!.initialize();
-      await controller!.setLooping(true);
-      await controller!.play();
-    }
-  }
-
-  @override
-  void dispose() {
-    controller?.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: widget.imagePath != null
-            ? Image.file(
-                File(widget.imagePath!),
-                fit: BoxFit.cover,
-              )
-            : AspectRatio(
-                aspectRatio: controller!.value.aspectRatio,
-                child: VideoPlayer(controller!),
-              ),
+      appBar: AppBar(
+        title: Text('Preview'),
+        leading: Container(), // Empty container to hide back button
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Image.file(
+              File(widget.imagePath),
+              fit: BoxFit.cover,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  icon: Icon(Icons.camera_alt),
+                  label: Text('Retake Photo'),
+                  onPressed: () {
+                    // Pops the current preview page and then the camera page to retake photo
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ElevatedButton.icon(
+                  icon: Icon(Icons.check_circle),
+                  label: Text('Use Photo'),
+                  onPressed: () {
+                    // For now, do nothing or navigate to a new page where you use the photo
+                    // Navigator.of(context).push(MaterialPageRoute(builder: (_) => UsePhotoPage()));
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
-
-

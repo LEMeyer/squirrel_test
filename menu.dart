@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/Squirrel.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const Menu());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class Menu extends StatelessWidget {
+  const Menu({super.key});
 
   // This widget is the root of your application.
   @override
@@ -60,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _openCamera() {
     setState(() {
-      _text = "Open Camera";
+      runApp(MyApp());
       // This will eventually go to camera
     });
   }

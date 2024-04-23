@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/Squirrel.dart';
+import 'package:flutter_application_2/squirrelPage.dart';
+import 'package:flutter_application_2/recentsPage.dart';
+import 'package:flutter_application_2/settings.dart';
 
 void main() {
   runApp(const Menu());
@@ -41,21 +44,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _openSettings() {
     setState(() {
-      _text = "Open Settings";
+      runApp(Settings());
       // This will eventually go to settings
     });
   }
 
   void _openSquirrelSelect() {
     setState(() {
-      _text = "Open Squirrel Page";
+      runApp(SquirrelPage());
       // This will eventually go to Squirrel page
     });
   }
 
   void _openRecents() {
     setState(() {
-      _text = "Open Recents";
+      runApp(RecentsPage());
       // This will eventually go to recent squirrel uploads
     });
   }

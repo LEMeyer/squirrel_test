@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:laudentestthree/menu.dart';
 
 void main() => runApp(const MyApp());
 
@@ -31,6 +32,13 @@ class CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   late CameraController _controller;
   bool _isCameraInitialized = false;
   late List<CameraDescription> _cameras;
+
+void _back() {
+    setState(() {
+      runApp(Menu());
+      // This will eventually go to Squirrel page
+    });
+  }
 
   @override
   void initState() {
@@ -149,6 +157,19 @@ class CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                       size: 30,
                     ),
                   ),
+                  ElevatedButton(
+                    onPressed: _back,
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: const Size(70, 70),
+                      shape: const CircleBorder(),
+                      backgroundColor: Colors.purple,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_back_ios,
+                      color:  Colors.white,
+                      size: 30,
+                    ),
+                  )
                 ],
               ),
             ],

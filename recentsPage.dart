@@ -54,6 +54,51 @@ class _MyHomePageState extends State<MyHomePage> {
             color: Colors.white
         ),
       ),
+      body: Center(
+        child: ListView(
+          padding: const EdgeInsets.all(8),
+          children: <Widget>[
+          Container(
+            height: 700,
+            child: Column(
+                        children: [ Align(
+                          alignment: Alignment.topCenter, 
+                          child: Container(height:50, color: Colors.grey[200],
+                          child: const Align(alignment: Alignment.centerLeft, child: Text('username')))),
+                          Align(
+                          alignment: Alignment.topCenter, 
+                          child: Container(height:500, color: Colors.amber[100],
+                          child: const Center(child: Text('Image 1'))))
+            ],
+          )),
+          Container(
+            height: 700,
+            child: Column(
+                        children: [ Align(
+                          alignment: Alignment.topCenter, 
+                          child: Container(height:50, color: Colors.grey[200],
+                          child: const Align(alignment: Alignment.centerLeft, child: Text('username')))),
+                          Align(
+                          alignment: Alignment.topCenter, 
+                          child: Container(height:500, color: Colors.amber[100],
+                          child: const Center(child: Text('Image 2'))))
+            ],
+          )),
+          Container(
+            height: 700,
+            child: Column(
+                        children: [ Align(
+                          alignment: Alignment.topCenter, 
+                          child: Container(height:50, color: Colors.grey[200],
+                          child: const Align(alignment: Alignment.centerLeft, child: Text('username')))),
+                          Align(
+                          alignment: Alignment.topCenter, 
+                          child: Container(height:500, color: Colors.amber[100],
+                          child: const Center(child: Text('Image 3'))))
+            ],
+          )),
+        ],
+      )),
     );
   }
 }
